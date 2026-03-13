@@ -19,6 +19,9 @@ from streamlit_webrtc import webrtc_streamer, WebRtcMode
 from ultralytics import YOLO
 import pandas as pd
 
+IS_CLOUD = os.getenv("SPACE_ID") is not None
+API_URL = "http://0.0.0.0:8000/api/v1/plant/detect" if IS_CLOUD else "http://127.0.0.1:8000/api/v1/plant/detect"
+
 lock = threading.Lock()
 img_container = {"frame_count": 0, "last_results": []}
 
@@ -200,6 +203,7 @@ def show_sidebar():
 # 7. PAGES
 # ─────────────────────────────────────────────
 def page_diagnose():
+    global API_URL
     st.title("🔬 Advanced Vision Diagnostic")
     st.markdown("Take a photo in the field or upload an existing image for analysis.")
 
@@ -230,7 +234,7 @@ def page_diagnose():
             with st.spinner("Connecting to backend..."):
                 try:
                     files = {"file": source_file.getvalue()}
-                    response = requests.post("http://127.0.0.1:8000/api/v1/plant/detect", files=files)
+                    response = requests.post(API_URL, files=files)
 
                     if response.status_code == 200:
                         data = response.json()
